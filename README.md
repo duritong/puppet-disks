@@ -1,6 +1,8 @@
 disks
 =====
 
+[![Build Status](https://travis-ci.org/duritong/puppet-disks.png?branch=master)](https://travis-ci.org/duritong/puppet-disks)
+
 This is the disks module to manage a data disc for further usage via an lvm.
 
 The basic idea is that our root-disc is only used by data related to the operating system.

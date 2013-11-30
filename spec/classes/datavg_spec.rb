@@ -1,12 +1,6 @@
 require File.expand_path(File.join(File.dirname(__FILE__),'../spec_helper'))
 
 describe 'disks::datavg', :type => 'class' do
-
-  describe 'with standard' do
-    it { expect { subject.call('fail') }.to raise_error(Puppet::Error) }
-    # it { should contain_anchor('disks::datavg::finished') }
-  end
-
   describe 'on kvm' do
     let(:facts){
       {
