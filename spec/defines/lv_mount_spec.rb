@@ -27,13 +27,13 @@ describe 'disks::lv_mount', :type => 'define' do
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext4',
+      :fs_type => 'ext4'
     )}
     it { should contain_file('/data').with(
       :ensure   => 'directory',
       :owner    => '100',
       :group    => '99',
-      :mode     => '0755',
+      :mode     => '0755'
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
@@ -43,7 +43,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext4',
       :options => 'defaults',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ],
+      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '100',
@@ -56,7 +56,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
-  
+
   context 'with mode and mount options' do
     let(:params){
       {
@@ -78,13 +78,13 @@ describe 'disks::lv_mount', :type => 'define' do
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext3',
+      :fs_type => 'ext3'
     )}
     it { should contain_file('/data').with(
       :ensure   => 'directory',
       :owner    => '1001',
       :group    => '991',
-      :mode     => '0600',
+      :mode     => '0600'
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
@@ -94,7 +94,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext3',
       :options => 'defaults,noatime',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ],
+      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '1001',
@@ -128,7 +128,7 @@ describe 'disks::lv_mount', :type => 'define' do
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext4',
+      :fs_type => 'ext4'
     )}
     it { should_not contain_file('/data') }
     it { should contain_mount('/data').with(
@@ -139,7 +139,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext4',
       :options => 'defaults,noatime',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ],
+      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '1001',
