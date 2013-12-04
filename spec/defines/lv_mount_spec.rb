@@ -33,7 +33,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure   => 'directory',
       :owner    => '100',
       :group    => '99',
-      :mode     => nil,
+      :mode     => nil
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
