@@ -18,6 +18,7 @@ describe 'disks::datavg', :type => 'class' do
         :ensure           => 'present',
         :physical_volumes => '/dev/vdb1',
         :createonly       => false,
+        :require          => 'Disks::Pv[/dev/vdb]',
         :before           => 'Anchor[disks::datavg::finished]'
       )}
       it { should contain_anchor('disks::datavg::finished') }
@@ -35,6 +36,7 @@ describe 'disks::datavg', :type => 'class' do
         :ensure           => 'present',
         :physical_volumes => '/dev/sdc1',
         :createonly       => true,
+        :require          => 'Disks::Pv[/dev/sdc]',
         :before           => 'Anchor[disks::datavg::finished]'
       )}
       it { should contain_anchor('disks::datavg::finished') }

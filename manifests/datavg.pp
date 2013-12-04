@@ -37,6 +37,7 @@ class disks::datavg(
     ensure           => present,
     physical_volumes => "${disk}1",
     createonly       => $createonly,
+    require          => Disks::Pv[$disk],
     before           => Anchor['disks::datavg::finished']
   }
 
