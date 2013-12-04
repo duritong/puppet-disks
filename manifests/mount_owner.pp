@@ -11,10 +11,12 @@ define disks::mount_owner(
   $mode   = undef
 ) {
 
-  exec{"ensure_mount_owner_on_${name}":
-    command     => "chown ${owner}:${group} ${name}",
-    refreshonly => true,
-    subscribe   => Mount[$name]
+  if $owner and $group {
+    exec{"ensure_mount_owner_on_${name}":
+      command     => "chown ${owner}:${group} ${name}",
+      refreshonly => true,
+      subscribe   => Mount[$name]
+    }
   }
 
   if $mode {

@@ -33,7 +33,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure   => 'directory',
       :owner    => '100',
       :group    => '99',
-      :mode     => '0755'
+      :mode     => nil,
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
@@ -48,7 +48,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '100',
       :group   => '99',
-      :mode    => '0755',
+      :mode    => nil,
       :require => 'Mount[/data]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}

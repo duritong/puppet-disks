@@ -15,9 +15,9 @@
 define disks::lv_mount(
   $size,
   $folder,
-  $owner          = 'root',
-  $group          = 0,
-  $mode           = '0755',
+  $owner          = undef,
+  $group          = undef,
+  $mode           = undef,
   $manage_folder  = true,
   $mount_options  = 'defaults',
   $fs_type        = 'ext4',
