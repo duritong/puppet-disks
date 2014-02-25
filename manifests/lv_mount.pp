@@ -54,6 +54,14 @@ define disks::lv_mount(
     require => [ File[$folder], Filesystem["/dev/${vg}/${name}"] ];
   }
 
+  if str2bool($::selinux) {
+    exec{"restorecon ${folder}":
+      refreshonly => true,
+      subscribe   => Mount[$folder],
+      before      => Anchor["disks::def_diskmount::${name}::finished"],
+    }
+  }
+
   disks::mount_owner{$folder:
     owner   => $owner,
     group   => $group,

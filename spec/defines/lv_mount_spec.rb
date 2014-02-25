@@ -6,7 +6,8 @@ describe 'disks::lv_mount', :type => 'define' do
     {
       :is_virtual => true,
       :virtual    => 'kvm',
-      :hostname   => 'host1'
+      :hostname   => 'host1',
+      :selinux    => true
     }
   }
   context "with default" do
@@ -45,6 +46,12 @@ describe 'disks::lv_mount', :type => 'define' do
       :device  => '/dev/vdata-host1/somedisk',
       :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
+
+    it { should contain_exec('restorecon /data').with(
+      :refreshonly => true,
+      :subscribe   => 'Mount[/data]',
+      :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
+    )}
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '100',
       :group   => '99',
@@ -58,6 +65,13 @@ describe 'disks::lv_mount', :type => 'define' do
   end
 
   context 'with mode and mount options' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
     let(:params){
       {
         :folder         => '/data',
@@ -96,6 +110,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :device  => '/dev/vdata-host1/somedisk',
       :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
+    it { should_not contain_exec('restorecon /data') }
     it { should contain_disks__mount_owner('/data').with(
       :owner   => '1001',
       :group   => '991',
