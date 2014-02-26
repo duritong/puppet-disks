@@ -11,7 +11,7 @@ describe 'disks::datavg', :type => 'class' do
     }
     context 'with default params' do
 
-      it { should include_class('disks') }
+      it { should contain_class('disks') }
 
       it { should contain_disks__pv('/dev/vdb') }
       it { should contain_volume_group('vdata-host1').with(
