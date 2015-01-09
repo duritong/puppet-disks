@@ -18,6 +18,7 @@ define disks::lv_mount(
   $owner          = undef,
   $group          = undef,
   $mode           = undef,
+  $seltype        = undef,
   $manage_folder  = true,
   $mount_options  = 'defaults',
   $fs_type        = 'ext4',
@@ -27,10 +28,10 @@ define disks::lv_mount(
   $vg = $disks::datavg::vg
 
   logical_volume{$name:
-    ensure        => present,
-    volume_group  => $vg,
-    size          => $size,
-    require       => Anchor['disks::datavg::finished'],
+    ensure       => present,
+    volume_group => $vg,
+    size         => $size,
+    require      => Anchor['disks::datavg::finished'],
   } -> filesystem{"/dev/${vg}/${name}":
     ensure  => present,
     fs_type => $fs_type,
@@ -40,7 +41,8 @@ define disks::lv_mount(
       ensure  => directory,
       owner   => $owner,
       group   => $group,
-      mode    => $mode;
+      mode    => $mode,
+      seltype => $seltype,
     }
   }
   mount{$folder:
@@ -59,6 +61,13 @@ define disks::lv_mount(
       refreshonly => true,
       subscribe   => Mount[$folder],
       before      => Anchor["disks::def_diskmount::${name}::finished"],
+    }
+    if $seltype {
+      exec{"chcon -t ${seltype} ${folder}":
+        refreshonly => true,
+        subscribe   => Mount[$folder],
+        before      => Anchor["disks::def_diskmount::${name}::finished"],
+      }
     }
   }
 

@@ -13,10 +13,11 @@ describe 'disks::lv_mount', :type => 'define' do
   context "with default" do
     let(:params){
       {
-        :folder => '/data',
-        :size   => '1G',
-        :owner  => '100',
-        :group  => '99'
+        :folder   => '/data',
+        :size     => '1G',
+        :owner    => '100',
+        :group    => '99',
+        :seltype  => 'foo_t'
       }
     }
     it { should contain_logical_volume('somedisk').with(
@@ -34,6 +35,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure   => 'directory',
       :owner    => '100',
       :group    => '99',
+      :seltype  => 'foo_t',
       :mode     => nil
     )}
     it { should contain_mount('/data').with(
@@ -48,6 +50,11 @@ describe 'disks::lv_mount', :type => 'define' do
     )}
 
     it { should contain_exec('restorecon /data').with(
+      :refreshonly => true,
+      :subscribe   => 'Mount[/data]',
+      :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
+    )}
+    it { should contain_exec('chcon -t foo_t /data').with(
       :refreshonly => true,
       :subscribe   => 'Mount[/data]',
       :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
