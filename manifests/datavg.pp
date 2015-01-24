@@ -18,11 +18,12 @@
 #                            after all volumes are initialized
 class disks::datavg(
   $disk       = $::virtual ? {
-    'vmware'    => '/dev/sdb',
-    'physical'  => '/dev/sdb',
-    'xen0'      => '/dev/sdb',
-    'xenU'      => '/dev/xvdb',
-    'kvm'       => '/dev/vdb',
+    'virtualbox' => '/dev/sdb',
+    'vmware'     => '/dev/sdb',
+    'physical'   => '/dev/sdb',
+    'xen0'       => '/dev/sdb',
+    'xenU'       => '/dev/xvdb',
+    'kvm'        => '/dev/vdb',
   },
   $vg         = str2bool($::is_virtual) ? {
     true    => "vdata-${::hostname}",
