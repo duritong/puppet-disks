@@ -36,7 +36,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '1G',
-      :require       => 'Anchor[disks::datavg::finished]',
+      :require       => 'Anchor[disks::datavg::finished]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
@@ -106,7 +106,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '11G',
-      :require       => 'Anchor[disks::datavg::finished]',
+      :require       => 'Anchor[disks::datavg::finished]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
@@ -157,7 +157,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '11G',
-      :require       => 'Anchor[disks::datavg::finished]',
+      :require       => 'Anchor[disks::datavg::finished]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
