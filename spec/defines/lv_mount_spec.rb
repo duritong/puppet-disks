@@ -10,6 +10,18 @@ describe 'disks::lv_mount', :type => 'define' do
       :selinux    => true
     }
   }
+  context "without size" do
+    let(:params){
+      {
+        :folder   => '/data',
+      }
+    }
+    it do
+      expect {
+        should contain_file('/data')
+      }.to raise_error(Puppet::Error, /Must pass \$size to somedisk if present/)
+    end
+  end
   context "with default" do
     let(:params){
       {
@@ -25,11 +37,11 @@ describe 'disks::lv_mount', :type => 'define' do
       :volume_group  => 'vdata-host1',
       :size          => '1G',
       :require       => 'Anchor[disks::datavg::finished]',
-      :before        => 'Filesystem[/dev/vdata-host1/somedisk]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext4'
+      :fs_type => 'ext4',
+      :require => 'Logical_volume[somedisk]'
     )}
     it { should contain_file('/data').with(
       :ensure   => 'directory',
@@ -95,11 +107,11 @@ describe 'disks::lv_mount', :type => 'define' do
       :volume_group  => 'vdata-host1',
       :size          => '11G',
       :require       => 'Anchor[disks::datavg::finished]',
-      :before        => 'Filesystem[/dev/vdata-host1/somedisk]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext3'
+      :fs_type => 'ext3',
+      :require => 'Logical_volume[somedisk]'
     )}
     it { should contain_file('/data').with(
       :ensure   => 'directory',
@@ -146,11 +158,11 @@ describe 'disks::lv_mount', :type => 'define' do
       :volume_group  => 'vdata-host1',
       :size          => '11G',
       :require       => 'Anchor[disks::datavg::finished]',
-      :before        => 'Filesystem[/dev/vdata-host1/somedisk]'
     )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
-      :fs_type => 'ext4'
+      :fs_type => 'ext4',
+      :require => 'Logical_volume[somedisk]'
     )}
     it { should_not contain_file('/data') }
     it { should contain_mount('/data').with(
@@ -170,6 +182,63 @@ describe 'disks::lv_mount', :type => 'define' do
       :require => 'Mount[/data]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
+    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+      :before  => 'Anchor[disks::all_mount_setup]'
+    )}
+  end
+  context 'with absent' do
+    let(:params){
+      {
+        :folder   => '/data',
+        :ensure   => 'absent',
+      }
+    }
+
+    it { should contain_mount('/data').with(
+      :ensure => 'absent',
+      :before => 'Logical_volume[somedisk]'
+    )}
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'absent',
+      :volume_group  => 'vdata-host1',
+      :require       => 'Anchor[disks::datavg::finished]',
+      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
+    )}
+    it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
+    it { should contain_file('/data').with(
+      :ensure  => 'absent',
+      :purge   => true,
+      :force   => true,
+      :recurse => true,
+      :require => 'Logical_volume[somedisk]',
+      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
+    )}
+    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+      :before  => 'Anchor[disks::all_mount_setup]'
+    )}
+  end
+
+  context 'with absent and not manage folder' do
+    let(:params){
+      {
+        :folder        => '/data',
+        :ensure        => 'absent',
+        :manage_folder => false,
+      }
+    }
+
+    it { should contain_mount('/data').with(
+      :ensure => 'absent',
+      :before => 'Logical_volume[somedisk]'
+    )}
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'absent',
+      :volume_group  => 'vdata-host1',
+      :require       => 'Anchor[disks::datavg::finished]',
+      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
+    )}
+    it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
+    it { should_not contain_file('/data') }
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
