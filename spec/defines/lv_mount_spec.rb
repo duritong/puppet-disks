@@ -99,7 +99,8 @@ describe 'disks::lv_mount', :type => 'define' do
         :group          => '991',
         :mode           => '0600',
         :mount_options  => 'defaults,noatime',
-        :fs_type        => 'ext3'
+        :fs_type        => 'ext3',
+        :fs_options     => '-m 100%'
       }
     }
     it { should contain_logical_volume('somedisk').with(
@@ -111,6 +112,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
       :fs_type => 'ext3',
+      :options => '-m 100%',
       :require => 'Logical_volume[somedisk]'
     )}
     it { should contain_file('/data').with(

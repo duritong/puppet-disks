@@ -22,6 +22,7 @@ define disks::lv_mount(
   $manage_folder  = true,
   $mount_options  = 'defaults',
   $fs_type        = 'ext4',
+  $fs_options     = undef,
   $ensure         = 'present',
 ){
 
@@ -46,6 +47,11 @@ define disks::lv_mount(
       ensure  => present,
       fs_type => $fs_type,
       require => Logical_volume[$name],
+    }
+    if $fs_options {
+      Filesystem["/dev/${vg}/${name}"]{
+        options => $fs_options
+      }
     }
     if $manage_folder {
       File[$folder]{
