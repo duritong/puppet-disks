@@ -40,8 +40,14 @@ define disks::lv_mount(
   mount{$folder: }
   if $ensure == 'present' {
     if !$size { fail("Must pass \$size to ${name} if present") }
-    Logical_volume[$name]{
-      size => $size
+    if $size =~ /^\d+%(?i:vg|pvs|free|origin)$/ {
+      Logical_volume[$name]{
+        extents => $size
+      }
+    } else {
+      Logical_volume[$name]{
+        size => $size
+      }
     }
     filesystem{"/dev/${vg}/${name}":
       ensure  => present,

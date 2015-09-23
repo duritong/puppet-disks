@@ -143,6 +143,106 @@ describe 'disks::lv_mount', :type => 'define' do
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
+  context 'with extents' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
+    let(:params){
+      {
+        :folder         => '/data',
+        :size           => '11%VG',
+      }
+    }
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'present',
+      :volume_group  => 'vdata-host1',
+      :extents       => '11%VG',
+    )}
+  end
+  context 'with extents 2' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
+    let(:params){
+      {
+        :folder         => '/data',
+        :size           => '11%PVS',
+      }
+    }
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'present',
+      :volume_group  => 'vdata-host1',
+      :extents       => '11%PVS',
+    )}
+  end
+  context 'with extents 3' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
+    let(:params){
+      {
+        :folder         => '/data',
+        :size           => '11%FREE',
+      }
+    }
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'present',
+      :volume_group  => 'vdata-host1',
+      :extents       => '11%FREE',
+    )}
+  end
+  context 'with extents 4' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
+    let(:params){
+      {
+        :folder         => '/data',
+        :size           => '11%ORIGIN',
+      }
+    }
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'present',
+      :volume_group  => 'vdata-host1',
+      :extents       => '11%ORIGIN',
+    )}
+  end
+  context 'with extents 4' do
+    let(:facts){
+      {
+        :is_virtual => true,
+        :virtual    => 'kvm',
+        :hostname   => 'host1'
+      }
+    }
+    let(:params){
+      {
+        :folder         => '/data',
+        :size           => '11%free',
+      }
+    }
+    it { should contain_logical_volume('somedisk').with(
+      :ensure        => 'present',
+      :volume_group  => 'vdata-host1',
+      :extents       => '11%free',
+    )}
+  end
   context 'without folder management' do
     let(:params){
       {
