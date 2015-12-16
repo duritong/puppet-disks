@@ -9,7 +9,7 @@
 #
 # Parameters:
 #
-#  - disk: Which disk to initialize
+#  - disks: Which disk to initialize
 #  - vg: The name of your datavg
 #  - createonly: Whether to only create the VG or also manage it
 #
@@ -23,14 +23,19 @@ class disks::datavg(
 ) inherits disks::datavg::params {
 
   include ::disks
-  disks::pv{$disks: }
-  $pvs = suffix($disks,'1')
+  if $disks != split($disks::datavg::params::pvs,',') {
+    $pvs = suffix($disks,'1')
+    disks::pv{$disks:
+      before => Volume_group[$vg],
+    }
+  } else {
+    $pvs = $disks::datavg::params::pvs
+  }
   volume_group {$vg:
     ensure           => present,
     physical_volumes => $pvs,
     createonly       => $createonly,
-    require          => Disks::Pv[$disks],
-    before           => Anchor['disks::datavg::finished']
+    before           => Anchor['disks::datavg::finished'],
   }
 
   anchor{'disks::datavg::finished': }
