@@ -17,28 +17,19 @@
 #  disks::datavg::finished - Used to anchor everything that should happen
 #                            after all volumes are initialized
 class disks::datavg(
-  $disk       = $::virtual ? {
-    'virtualbox' => '/dev/sdb',
-    'vmware'     => '/dev/sdb',
-    'physical'   => '/dev/sdb',
-    'xen0'       => '/dev/sdb',
-    'xenU'       => '/dev/xvdb',
-    'kvm'        => '/dev/vdb',
-  },
-  $vg         = str2bool($::is_virtual) ? {
-    true    => "vdata-${::hostname}",
-    default => "data-${::hostname}",
-  },
+  $disks      = $disks::datavg::params::disks,
+  $vg         = $disks::datavg::params::vg,
   $createonly = false,
-) {
+) inherits disks::datavg::params {
 
   include ::disks
-  disks::pv{$disk: }
+  disks::pv{$disks: }
+  $pvs = suffix($disks,'1')
   volume_group {$vg:
     ensure           => present,
-    physical_volumes => "${disk}1",
+    physical_volumes => $pvs,
     createonly       => $createonly,
-    require          => Disks::Pv[$disk],
+    require          => Disks::Pv[$disks],
     before           => Anchor['disks::datavg::finished']
   }
 

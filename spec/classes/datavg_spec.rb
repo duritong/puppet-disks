@@ -26,7 +26,7 @@ describe 'disks::datavg', :type => 'class' do
     context 'with other params' do
       let(:params){
         {
-          :disk       => '/dev/sdc',
+          :disks      => ['/dev/sdc'],
           :vg         => 'foo',
           :createonly => true
         }
