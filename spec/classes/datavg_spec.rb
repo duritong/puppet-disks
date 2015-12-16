@@ -14,7 +14,7 @@ describe 'disks::datavg', :type => 'class' do
       it { should contain_class('disks') }
 
       it { should contain_disks__pv('/dev/vdb').with(
-        :before => 'Volume_group[vdata-host1]',
+        :before => 'Volume_group[vdata-host1]'
       ) }
       it { should contain_volume_group('vdata-host1').with(
         :ensure           => 'present',
