@@ -33,7 +33,7 @@ describe 'disks::datavg', :type => 'class' do
         }
       }
       it { should contain_disks__pv('/dev/sdc').with(
-        :before => 'Volume_group[foo]',
+        :before => 'Volume_group[foo]'
       ) }
       it { should contain_volume_group('foo').with(
         :ensure           => 'present',

@@ -160,7 +160,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
-      :extents       => '11%VG',
+      :extents       => '11%VG'
     )}
   end
   context 'with extents 2' do
@@ -180,7 +180,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
-      :extents       => '11%PVS',
+      :extents       => '11%PVS'
     )}
   end
   context 'with extents 3' do
@@ -200,7 +200,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
-      :extents       => '11%FREE',
+      :extents       => '11%FREE'
     )}
   end
   context 'with extents 4' do
@@ -220,7 +220,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
-      :extents       => '11%ORIGIN',
+      :extents       => '11%ORIGIN'
     )}
   end
   context 'with extents 4' do
@@ -240,7 +240,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { should contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
-      :extents       => '11%free',
+      :extents       => '11%free'
     )}
   end
   context 'without folder management' do
