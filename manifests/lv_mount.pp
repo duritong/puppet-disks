@@ -59,14 +59,9 @@ define disks::lv_mount(
         options => $fs_options
       }
     }
-    if $manage_folder {
-      File[$folder]{
-        ensure  => directory,
-        owner   => $owner,
-        group   => $group,
-        mode    => $mode,
-        seltype => $seltype,
-      }
+    exec{"mkdir ${folder}":
+      creates => $folder,
+      before  => Mount[$folder],
     }
     Mount[$folder]{
       ensure  => 'mounted',
@@ -76,7 +71,17 @@ define disks::lv_mount(
       fstype  => $fs_type,
       options => $mount_options,
       device  => "/dev/${vg}/${name}",
-      require => [ File[$folder], Filesystem["/dev/${vg}/${name}"] ],
+      require => Filesystem["/dev/${vg}/${name}"],
+    }
+    if $manage_folder {
+      File[$folder]{
+        ensure  => directory,
+        owner   => $owner,
+        group   => $group,
+        mode    => $mode,
+        seltype => $seltype,
+        require => Mount[$folder],
+      }
     }
 
     if str2bool($::selinux) {
@@ -85,22 +90,7 @@ define disks::lv_mount(
         subscribe   => Mount[$folder],
         before      => Anchor["disks::def_diskmount::${name}::finished"],
       }
-      if $seltype {
-        exec{"chcon -t ${seltype} ${folder}":
-          refreshonly => true,
-          subscribe   => Mount[$folder],
-          before      => Anchor["disks::def_diskmount::${name}::finished"],
-        }
-      }
     }
-
-    disks::mount_owner{$folder:
-      owner   => $owner,
-      group   => $group,
-      mode    => $mode,
-      require => Mount[$folder],
-      before  => Anchor["disks::def_diskmount::${name}::finished"];
-      }
   } else {
     Mount[$folder]{
       ensure => 'absent',
@@ -110,12 +100,16 @@ define disks::lv_mount(
       before => Anchor["disks::def_diskmount::${name}::finished"]
     }
     if $manage_folder {
+      exec{"rm -rf ${folder}":
+        unless  => "test -d ${folder}",
+        require => Logical_volume[$name],
+        before  => File[$folder],
+      }
       File[$folder]{
         ensure  => absent,
         force   => true,
         purge   => true,
         recurse => true,
-        require => Logical_volume[$name],
         before  => Anchor["disks::def_diskmount::${name}::finished"]
       }
     }

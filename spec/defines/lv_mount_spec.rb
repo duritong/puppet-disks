@@ -43,12 +43,9 @@ describe 'disks::lv_mount', :type => 'define' do
       :fs_type => 'ext4',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should contain_file('/data').with(
-      :ensure   => 'directory',
-      :owner    => '100',
-      :group    => '99',
-      :seltype  => 'foo_t',
-      :mode     => nil
+    it { should contain_exec('mkdir /data').with(
+      :creates => '/data',
+      :before => 'Mount[/data]',
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
@@ -58,25 +55,21 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext4',
       :options => 'defaults',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
+      :require => 'Filesystem[/dev/vdata-host1/somedisk]',
+    )}
+    it { should contain_file('/data').with(
+      :ensure   => 'directory',
+      :owner    => '100',
+      :group    => '99',
+      :seltype  => 'foo_t',
+      :mode     => nil,
+      :require  => 'Mount[/data]'
     )}
 
     it { should contain_exec('restorecon /data').with(
       :refreshonly => true,
       :subscribe   => 'Mount[/data]',
       :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
-    )}
-    it { should contain_exec('chcon -t foo_t /data').with(
-      :refreshonly => true,
-      :subscribe   => 'Mount[/data]',
-      :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
-    )}
-    it { should contain_disks__mount_owner('/data').with(
-      :owner   => '100',
-      :group   => '99',
-      :mode    => nil,
-      :require => 'Mount[/data]',
-      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
@@ -115,11 +108,9 @@ describe 'disks::lv_mount', :type => 'define' do
       :options => '-m 100%',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should contain_file('/data').with(
-      :ensure   => 'directory',
-      :owner    => '1001',
-      :group    => '991',
-      :mode     => '0600'
+    it { should contain_exec('mkdir /data').with(
+      :creates => '/data',
+      :before => 'Mount[/data]',
     )}
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
@@ -129,16 +120,16 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext3',
       :options => 'defaults,noatime',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
+      :require => 'Filesystem[/dev/vdata-host1/somedisk]',
+    )}
+    it { should contain_file('/data').with(
+      :ensure   => 'directory',
+      :owner    => '1001',
+      :group    => '991',
+      :mode     => '0600',
+      :require  => 'Mount[/data]'
     )}
     it { should_not contain_exec('restorecon /data') }
-    it { should contain_disks__mount_owner('/data').with(
-      :owner   => '1001',
-      :group   => '991',
-      :mode    => '0600',
-      :require => 'Mount[/data]',
-      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
-    )}
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
@@ -261,12 +252,15 @@ describe 'disks::lv_mount', :type => 'define' do
       :size          => '11G',
       :require       => 'Anchor[disks::datavg::finished]'
     )}
+    it { should contain_exec('mkdir /data').with(
+      :creates => '/data',
+      :before => 'Mount[/data]',
+    )}
     it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
       :fs_type => 'ext4',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should_not contain_file('/data') }
     it { should contain_mount('/data').with(
       :ensure  => 'mounted',
       :atboot  => true,
@@ -275,15 +269,8 @@ describe 'disks::lv_mount', :type => 'define' do
       :fstype  => 'ext4',
       :options => 'defaults,noatime',
       :device  => '/dev/vdata-host1/somedisk',
-      :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
-    it { should contain_disks__mount_owner('/data').with(
-      :owner   => '1001',
-      :group   => '991',
-      :mode    => '0600',
-      :require => 'Mount[/data]',
-      :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
-    )}
+    it { should_not contain_file('/data') }
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
@@ -307,12 +294,17 @@ describe 'disks::lv_mount', :type => 'define' do
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
     it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
+    it { should_not contain_exec('mkdir /data') }
+    it { should contain_exec('rm -rf /data').with(
+      :unless  => 'test -d /data',
+      :require => 'Logical_volume[somedisk]',
+      :before  => 'File[/data]',
+    ) }
     it { should contain_file('/data').with(
       :ensure  => 'absent',
       :purge   => true,
       :force   => true,
       :recurse => true,
-      :require => 'Logical_volume[somedisk]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
@@ -329,6 +321,7 @@ describe 'disks::lv_mount', :type => 'define' do
       }
     }
 
+    it { should_not contain_exec('mkdir /data') }
     it { should contain_mount('/data').with(
       :ensure => 'absent',
       :before => 'Logical_volume[somedisk]'
@@ -341,6 +334,7 @@ describe 'disks::lv_mount', :type => 'define' do
     )}
     it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
     it { should_not contain_file('/data') }
+    it { should_not contain_exec('rm -rf /data') }
     it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
