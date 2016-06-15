@@ -2,13 +2,17 @@ require File.expand_path(File.join(File.dirname(__FILE__),'../spec_helper'))
 
 describe 'disks::lv_mount', :type => 'define' do
   let(:title) { 'somedisk' }
-  let(:facts){
+  let(:default_facts){
     {
-      :is_virtual => true,
-      :virtual    => 'kvm',
-      :hostname   => 'host1',
-      :selinux    => true
+      :is_virtual               => true,
+      :selinux                  => true,
+      :virtual                  => 'kvm',
+      :hostname                 => 'host1',
+      :lvm_vg_vdata_host1_pvs => '/dev/sdb1',
     }
+  }
+  let(:facts){
+    default_facts
   }
   context "without size" do
     let(:params){
@@ -18,7 +22,7 @@ describe 'disks::lv_mount', :type => 'define' do
     }
     it do
       expect {
-        should contain_file('/data')
+        is_expected.to contain_file('/data')
       }.to raise_error(Puppet::Error, /Must pass \$size to somedisk if present/)
     end
   end
@@ -32,25 +36,25 @@ describe 'disks::lv_mount', :type => 'define' do
         :seltype  => 'foo_t'
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '1G',
       :require       => 'Anchor[disks::datavg::finished]'
     )}
-    it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
+    it { is_expected.to contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
       :fs_type => 'ext4',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should contain_file('/data').with(
+    it { is_expected.to contain_file('/data').with(
       :ensure   => 'directory',
       :owner    => '100',
       :group    => '99',
       :seltype  => 'foo_t',
       :mode     => nil
     )}
-    it { should contain_mount('/data').with(
+    it { is_expected.to contain_mount('/data').with(
       :ensure  => 'mounted',
       :atboot  => true,
       :dump    => 1,
@@ -61,36 +65,29 @@ describe 'disks::lv_mount', :type => 'define' do
       :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
 
-    it { should contain_exec('restorecon /data').with(
+    it { is_expected.to contain_exec('restorecon /data').with(
       :refreshonly => true,
       :subscribe   => 'Mount[/data]',
       :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_exec('chcon -t foo_t /data').with(
+    it { is_expected.to contain_exec('chcon -t foo_t /data').with(
       :refreshonly => true,
       :subscribe   => 'Mount[/data]',
       :before      => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_disks__mount_owner('/data').with(
+    it { is_expected.to contain_disks__mount_owner('/data').with(
       :owner   => '100',
       :group   => '99',
       :mode    => nil,
       :require => 'Mount[/data]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+    it { is_expected.to contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
 
   context 'with mode and mount options' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
@@ -103,25 +100,25 @@ describe 'disks::lv_mount', :type => 'define' do
         :fs_options     => '-m 100%'
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '11G',
       :require       => 'Anchor[disks::datavg::finished]'
     )}
-    it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
+    it { is_expected.to contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
       :fs_type => 'ext3',
       :options => '-m 100%',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should contain_file('/data').with(
+    it { is_expected.to contain_file('/data').with(
       :ensure   => 'directory',
       :owner    => '1001',
       :group    => '991',
       :mode     => '0600'
     )}
-    it { should contain_mount('/data').with(
+    it { is_expected.to contain_mount('/data').with(
       :ensure  => 'mounted',
       :atboot  => true,
       :dump    => 1,
@@ -131,113 +128,78 @@ describe 'disks::lv_mount', :type => 'define' do
       :device  => '/dev/vdata-host1/somedisk',
       :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
-    it { should_not contain_exec('restorecon /data') }
-    it { should contain_disks__mount_owner('/data').with(
+    it { is_expected.to contain_exec('restorecon /data') }
+    it { is_expected.to contain_disks__mount_owner('/data').with(
       :owner   => '1001',
       :group   => '991',
       :mode    => '0600',
       :require => 'Mount[/data]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+    it { is_expected.to contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
   context 'with extents' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
         :size           => '11%VG',
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :extents       => '11%VG'
     )}
   end
   context 'with extents 2' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
         :size           => '11%PVS',
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :extents       => '11%PVS'
     )}
   end
   context 'with extents 3' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
         :size           => '11%FREE',
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :extents       => '11%FREE'
     )}
   end
   context 'with extents 4' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
         :size           => '11%ORIGIN',
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :extents       => '11%ORIGIN'
     )}
   end
   context 'with extents 4' do
-    let(:facts){
-      {
-        :is_virtual => true,
-        :virtual    => 'kvm',
-        :hostname   => 'host1'
-      }
-    }
     let(:params){
       {
         :folder         => '/data',
         :size           => '11%free',
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :extents       => '11%free'
@@ -255,19 +217,19 @@ describe 'disks::lv_mount', :type => 'define' do
         :mount_options  => 'defaults,noatime'
       }
     }
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'present',
       :volume_group  => 'vdata-host1',
       :size          => '11G',
       :require       => 'Anchor[disks::datavg::finished]'
     )}
-    it { should contain_filesystem("/dev/vdata-host1/somedisk").with(
+    it { is_expected.to contain_filesystem("/dev/vdata-host1/somedisk").with(
       :ensure  => 'present',
       :fs_type => 'ext4',
       :require => 'Logical_volume[somedisk]'
     )}
-    it { should_not contain_file('/data') }
-    it { should contain_mount('/data').with(
+    it { is_expected.to_not contain_file('/data') }
+    it { is_expected.to contain_mount('/data').with(
       :ensure  => 'mounted',
       :atboot  => true,
       :dump    => 1,
@@ -277,14 +239,14 @@ describe 'disks::lv_mount', :type => 'define' do
       :device  => '/dev/vdata-host1/somedisk',
       :require => [ 'File[/data]', 'Filesystem[/dev/vdata-host1/somedisk]' ]
     )}
-    it { should contain_disks__mount_owner('/data').with(
+    it { is_expected.to contain_disks__mount_owner('/data').with(
       :owner   => '1001',
       :group   => '991',
       :mode    => '0600',
       :require => 'Mount[/data]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+    it { is_expected.to contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
@@ -296,18 +258,18 @@ describe 'disks::lv_mount', :type => 'define' do
       }
     }
 
-    it { should contain_mount('/data').with(
+    it { is_expected.to contain_mount('/data').with(
       :ensure => 'absent',
       :before => 'Logical_volume[somedisk]'
     )}
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'absent',
       :volume_group  => 'vdata-host1',
       :require       => 'Anchor[disks::datavg::finished]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
-    it { should contain_file('/data').with(
+    it { is_expected.to_not contain_filesystem("/dev/vdata-host1/somedisk") }
+    it { is_expected.to contain_file('/data').with(
       :ensure  => 'absent',
       :purge   => true,
       :force   => true,
@@ -315,7 +277,7 @@ describe 'disks::lv_mount', :type => 'define' do
       :require => 'Logical_volume[somedisk]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+    it { is_expected.to contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end
@@ -329,19 +291,19 @@ describe 'disks::lv_mount', :type => 'define' do
       }
     }
 
-    it { should contain_mount('/data').with(
+    it { is_expected.to contain_mount('/data').with(
       :ensure => 'absent',
       :before => 'Logical_volume[somedisk]'
     )}
-    it { should contain_logical_volume('somedisk').with(
+    it { is_expected.to contain_logical_volume('somedisk').with(
       :ensure        => 'absent',
       :volume_group  => 'vdata-host1',
       :require       => 'Anchor[disks::datavg::finished]',
       :before  => 'Anchor[disks::def_diskmount::somedisk::finished]'
     )}
-    it { should_not contain_filesystem("/dev/vdata-host1/somedisk") }
-    it { should_not contain_file('/data') }
-    it { should contain_anchor('disks::def_diskmount::somedisk::finished').with(
+    it { is_expected.to_not contain_filesystem("/dev/vdata-host1/somedisk") }
+    it { is_expected.to_not contain_file('/data') }
+    it { is_expected.to contain_anchor('disks::def_diskmount::somedisk::finished').with(
       :before  => 'Anchor[disks::all_mount_setup]'
     )}
   end

@@ -2,6 +2,17 @@ require File.expand_path(File.join(File.dirname(__FILE__),'../spec_helper'))
 
 describe 'disks::mount_owner', :type => 'define' do
   let(:title) { '/var/log/munin' }
+  let(:default_facts){
+    {
+      :is_virtual               => true,
+      :virtual                  => 'kvm',
+      :hostname                 => 'host1',
+      :lvm_vg_vdata_host1_pvs => '/dev/sdb1',
+    }
+  }
+  let(:facts){
+    default_facts
+  }
   context "with default_values" do
     let(:params){
       {
@@ -16,7 +27,7 @@ describe 'disks::mount_owner', :type => 'define' do
     )}
     it { should_not contain_exec("ensure_mount_mode_on_/var/log/munin") }
   end
-  
+
   context 'with mode' do
     let(:params){
       {
