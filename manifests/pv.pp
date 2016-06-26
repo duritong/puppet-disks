@@ -4,10 +4,10 @@ define disks::pv() {
 
   include disks::utils
   exec{"make_${name}":
-    command  => "/usr/local/sbin/init_datavg_disk.sh ${name}",
-    unless   => "test -b ${name}1",
-    notify   => Exec["partprobe_${name}"],
-    require  => File['/usr/local/sbin/init_datavg_disk.sh'],
+    command => "/usr/local/sbin/init_datavg_disk.sh ${name}",
+    unless  => "test -b ${name}1",
+    notify  => Exec["partprobe_${name}"],
+    require => File['/usr/local/sbin/init_datavg_disk.sh'],
   }
 
   exec{"partprobe_${name}":

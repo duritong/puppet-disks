@@ -2,6 +2,15 @@ require File.expand_path(File.join(File.dirname(__FILE__),'../spec_helper'))
 
 describe 'disks::pv', :type => 'define' do
   let(:title) { '/dev/sdb' }
+  let(:default_facts){
+    {
+      :is_virtual               => true,
+      :virtual                  => 'kvm',
+      :hostname                 => 'host1',
+      :lvm_vg_vdata_host1_pvs => '/dev/sdb1',
+    }
+  }
+  let(:facts){ default_facts }
   context "with default_values" do
 
     it { should contain_class('disks::utils') }
