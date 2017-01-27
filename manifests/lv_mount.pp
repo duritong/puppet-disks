@@ -85,7 +85,7 @@ define disks::lv_mount(
     }
 
     if str2bool($::selinux) {
-      exec{"restorecon ${folder}":
+      File<| title == $folder |> -> exec{"restorecon ${folder}":
         refreshonly => true,
         subscribe   => Mount[$folder],
         before      => Anchor["disks::def_diskmount::${name}::finished"],
