@@ -101,7 +101,7 @@ define disks::lv_mount(
     }
     if $manage_folder {
       exec{"rm -rf ${folder}":
-        unless  => "test -d ${folder}",
+        onlyif  => "test -d ${folder}",
         require => Logical_volume[$name],
         before  => File[$folder],
       }

@@ -262,7 +262,7 @@ describe 'disks::lv_mount', :type => 'define' do
     it { is_expected.to_not contain_filesystem("/dev/vdata-host1/somedisk") }
     it { is_expected.to_not contain_exec('mkdir /data') }
     it { is_expected.to contain_exec('rm -rf /data').with(
-      :unless  => 'test -d /data',
+      :onlyif  => 'test -d /data',
       :require => 'Logical_volume[somedisk]',
       :before  => 'File[/data]',
     ) }
