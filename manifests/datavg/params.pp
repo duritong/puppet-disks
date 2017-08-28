@@ -6,7 +6,7 @@ class disks::datavg::params {
   }
 
   # compatibility layer
-  $old_disk = hiera('disks::datavg::disk',false)
+  $old_disk = lookup('disks::datavg::disk', { default_value => false })
   $vgname = regsubst($vg,'-','_','G')
   $pvs = getvar("::lvm_vg_${vgname}_pvs")
   if $old_disk {
