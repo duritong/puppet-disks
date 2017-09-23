@@ -13,6 +13,23 @@ describe 'disks::pv', :type => 'define' do
   let(:facts){ default_facts }
   context "with default_values" do
 
+    it { should_not contain_class('disks::utils') }
+
+    it { should_not contain_exec('make_/dev/sdb') }
+
+    it { should_not contain_exec('partprobe_/dev/sdb') }
+
+    it { should contain_physical_volume('/dev/sdb').with(
+      :ensure  => 'present',
+    )}
+  end
+  context "with partition" do
+    let(:params) {
+      {
+        :force_part => true
+      }
+    }
+
     it { should contain_class('disks::utils') }
 
     it { should contain_exec('make_/dev/sdb').with(
@@ -24,12 +41,12 @@ describe 'disks::pv', :type => 'define' do
 
     it { should contain_exec('partprobe_/dev/sdb').with(
       :command     => 'partprobe /dev/sdb',
-      :refreshonly => true
+      :refreshonly => true,
+      :before      => 'Physical_volume[/dev/sdb1]',
     )}
 
     it { should contain_physical_volume('/dev/sdb1').with(
       :ensure  => 'present',
-      :require => 'Exec[partprobe_/dev/sdb]'
     )}
   end
 end

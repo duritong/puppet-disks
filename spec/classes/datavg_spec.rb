@@ -19,7 +19,7 @@ describe 'disks::datavg', :type => 'class' do
       it { is_expected.to contain_disks__pv('/dev/vdb').that_comes_before('Volume_group[vdata-host1]')}
       it { is_expected.to contain_volume_group('vdata-host1').with(
         :ensure           => 'present',
-        :physical_volumes => ['/dev/vdb1'],
+        :physical_volumes => ['/dev/vdb'],
         :createonly       => false,
         :before           => 'Anchor[disks::datavg::finished]'
       )}
@@ -38,7 +38,7 @@ describe 'disks::datavg', :type => 'class' do
       ) }
       it { is_expected.to contain_volume_group('foo').with(
         :ensure           => 'present',
-        :physical_volumes => ['/dev/sdc1'],
+        :physical_volumes => ['/dev/sdc'],
         :createonly       => true,
         :before           => 'Anchor[disks::datavg::finished]'
       )}

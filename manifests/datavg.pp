@@ -23,13 +23,24 @@ class disks::datavg(
 ) inherits disks::datavg::params {
 
   include ::disks
-  if !$disks::datavg::params::pvs or ($disks != split($disks::datavg::params::pvs,',')) {
-    $pvs = suffix($disks,'1')
-    disks::pv{$disks:
-      before => Volume_group[$vg],
-    }
+  if !$disks::datavg::params::pvs {
+    $pvs = $disks
+    $pvs_to_mgmt = $disks
   } else {
-    $pvs = $disks::datavg::params::pvs
+    $curr_disks = split($disks::datavg::params::pvs,',')
+    if $disks != $curr_disks {
+      $pvs_to_mgmt = $disks - split($disks::datavg::params::pvs,',')
+      $pvs = $disks
+    } else {
+      $pvs = $disks::datavg::params::pvs
+      $pvs_to_mgmt = []
+    }
+  }
+  if !empty($pvs_to_mgmt) {
+    disks::pv{$pvs_to_mgmt:
+      force_part => false,
+      before     => Volume_group[$vg],
+    }
   }
   volume_group {$vg:
     ensure           => present,

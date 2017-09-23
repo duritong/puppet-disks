@@ -6,25 +6,19 @@ class disks::datavg::params {
   }
 
   # compatibility layer
-  $old_disk = lookup('disks::datavg::disk', { default_value => false })
   $vgname = regsubst($vg,'-','_','G')
   $pvs = getvar("::lvm_vg_${vgname}_pvs")
-  if $old_disk {
-    notice('DEPRECATION: disks::datavg::disk should be renamed to disks::datavg::disks in you hieradata')
-    $disks = [ $old_disk ]
+  if $pvs {
+    $default_disks = sort(split($pvs,','))
   } else {
-    if $pvs {
-      $default_disks = sort(split($pvs,','))
-    } else {
-      $default_disks = $::virtual ? {
-        'virtualbox' => [ '/dev/sdb', ],
-        'vmware'     => [ '/dev/sdb', ],
-        'physical'   => [ '/dev/sdb', ],
-        'xen0'       => [ '/dev/sdb', ],
-        'xenU'       => [ '/dev/xvdb', ],
-        'kvm'        => [ '/dev/vdb', ],
-      }
+    $default_disks = $::virtual ? {
+      'virtualbox' => [ '/dev/sdb', ],
+      'vmware'     => [ '/dev/sdb', ],
+      'physical'   => [ '/dev/sdb', ],
+      'xen0'       => [ '/dev/sdb', ],
+      'xenU'       => [ '/dev/xvdb', ],
+      'kvm'        => [ '/dev/vdb', ],
     }
-    $disks = $default_disks
   }
+  $disks = $default_disks
 }
