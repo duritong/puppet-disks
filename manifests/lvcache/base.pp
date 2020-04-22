@@ -1,6 +1,6 @@
 # manage lvm cached volumes
 class disks::lvcache::base(
-  Array[Pattern[/^.*\-..*$/]]
+  Array[Pattern[/^.*(\-|\/).*$/]]
     $cache_vols = pick($facts['lvm_cache_vols'],[]),
 ){
 
