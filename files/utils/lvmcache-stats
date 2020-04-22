@@ -8,7 +8,6 @@
 # use strict mode
 set -o errexit
 set -o pipefail
-set -o nounset
 
 FIELDS=$(cat <<EOF
 start
@@ -45,7 +44,25 @@ function insert_after()
     awk "// { print } ; /$1/ { print \"\n$2 $3\" }"
 }
 
-CACHE_ID=`echo "$1" | sed 's/-/--/' | tr / -`
+function no_such_cache_device(){
+  echo "No such cache device (${1}) found"
+  echo "Current cache devices"
+  echo
+  lvs -S lv_attr=~^C --noheadings --separator / -o vg_name,lv_name
+  echo
+  exit 1
+}
+
+if [ ! -b "/dev/${1}" ]; then
+  no_such_cache_device $1
+fi
+
+cache_device=$(lvs -S "lv_attr=~^C && lv_path=/dev/${1}" --noheadings --separator / -o vg_name,lv_name)
+if [ -z "${cache_device}" ]; then
+  no_such_cache_device $1
+fi
+
+CACHE_ID=`echo "${1}" | sed 's/-/--/' | tr / -`
 CACHE_STATS=$(paste <(echo "$FIELDS") <(dmsetup status | grep "${CACHE_ID}:" | sed -r -e 's/.*: (.*)/\1/' | tr ' ' '\n' | head -n${FIELD_COUNT}))
 
 # calculate cache hit percentage
