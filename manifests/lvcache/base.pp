@@ -22,7 +22,7 @@ class disks::lvcache::base(
     }
 
     $cache_vols.each |$vol| {
-      $vol_plugin_name = $vol.gsub(/\-/,'____')
+      $vol_plugin_name = $vol.gsub(/(\-|\/)/,'____')
       munin::plugin{
         default:
           config => 'user root';
