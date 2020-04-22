@@ -9,3 +9,4 @@ Facter.add('lvm_cache_vols') do
       JSON.load(output)['report'].first['lv'].map{|d| "#{d['vg_name']}/#{d['lv_name']}" }
     end
   end
+end
