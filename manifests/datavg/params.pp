@@ -18,6 +18,8 @@ class disks::datavg::params {
       'xen0'       => [ '/dev/sdb', ],
       'xenU'       => [ '/dev/xvdb', ],
       'kvm'        => [ '/dev/vdb', ],
+      # Qubes ibox
+      'xen'        => [ '/dev/xvdc', ],
     }
   }
   $disks = $default_disks
