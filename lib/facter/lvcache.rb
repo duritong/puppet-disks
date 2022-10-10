@@ -6,7 +6,12 @@ Facter.add('lvm_cache_vols') do
     if output.nil?
       []
     else
-      JSON.load(output)['report'].first['lv'].map{|d| "#{d['vg_name']}/#{d['lv_name']}" }
+      j = JSON.load(output)
+      if j.is_a?(Hash)
+        j['report'].first['lv'].map{|d| "#{d['vg_name']}/#{d['lv_name']}" }
+      else
+        []
+      end
     end
   end
 end
