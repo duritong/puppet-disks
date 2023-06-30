@@ -1,17 +1,17 @@
 # basic parameters
 class disks::datavg::params {
-  $vg = str2bool($::is_virtual) ? {
-    true    => "vdata-${::hostname}",
-    default => "data-${::hostname}",
+  $vg = str2bool($facts['is_virtual']) ? {
+    true    => "vdata-${facts['networking']['hostname']}",
+    default => "data-${facts['networking']['hostname']}",
   }
 
   # compatibility layer
   $vgname = regsubst($vg,'-','_','G')
-  $pvs = getvar("::lvm_vg_${vgname}_pvs")
+  $pvs = $facts["lvm_vg_${vgname}_pvs"]
   if $pvs {
     $default_disks = sort(split($pvs,','))
   } else {
-    $default_disks = $::virtual ? {
+    $default_disks = $facts['virtual'] ? {
       'virtualbox' => [ '/dev/sdb', ],
       'vmware'     => [ '/dev/sdb', ],
       'physical'   => [ '/dev/sdb', ],

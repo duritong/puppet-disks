@@ -6,7 +6,9 @@ describe 'disks::datavg', :type => 'class' do
       {
         :virtual                => 'kvm',
         :is_virtual             => true,
-        :hostname               => 'host1',
+        :networking => {
+          :hostname               => 'host1',
+        },
       }
     }
     let(:facts){

@@ -4,10 +4,14 @@ describe 'disks::lv_mount', :type => 'define' do
   let(:title) { 'somedisk' }
   let(:default_facts){
     {
+      :os => {
+        :selinux => { :enabled => true, },
+      },
       :is_virtual               => true,
-      :selinux                  => true,
       :virtual                  => 'kvm',
-      :hostname                 => 'host1',
+      :networking => {
+        :hostname => 'host1',
+      },
       :lvm_vg_vdata_host1_pvs => '/dev/sdb1',
     }
   }

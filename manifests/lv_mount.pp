@@ -14,16 +14,17 @@
 #
 define disks::lv_mount(
   $folder,
-  $size           = undef,
-  $owner          = undef,
-  $group          = undef,
-  $mode           = undef,
-  $seltype        = undef,
-  $manage_folder  = true,
-  $mount_options  = 'defaults',
-  $fs_type        = 'ext4',
-  $fs_options     = undef,
-  $ensure         = 'present',
+  $size = undef,
+  $owner = undef,
+  $group = undef,
+  $mode = undef,
+  $seltype = undef,
+  Optional[Boolean] $selinux_ignore_defaults = undef,
+  $manage_folder = true,
+  $mount_options = 'defaults',
+  $fs_type = 'ext4',
+  $fs_options = undef,
+  $ensure = 'present',
 ){
 
   include disks::datavg
@@ -75,16 +76,17 @@ define disks::lv_mount(
     }
     if $manage_folder {
       File[$folder]{
-        ensure  => directory,
-        owner   => $owner,
-        group   => $group,
-        mode    => $mode,
-        seltype => $seltype,
-        require => Mount[$folder],
+        ensure                  => directory,
+        owner                   => $owner,
+        group                   => $group,
+        mode                    => $mode,
+        seltype                 => $seltype,
+        selinux_ignore_defaults => $selinux_ignore_defaults,
+        require                 => Mount[$folder],
       }
     }
 
-    if str2bool($::selinux) {
+    if str2bool($facts['os']['selinux']['enabled']) {
       File<| title == $folder |> -> exec{"restorecon ${folder}":
         refreshonly => true,
         subscribe   => Mount[$folder],
